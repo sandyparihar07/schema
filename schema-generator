@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Schema Generator</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #34495e;
+            padding: 20px;
+            color: #ecf0f1;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .sidebar h2 {
+            margin-top: 0;
+            color: #1abc9c;
+        }
+        .sidebar label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .sidebar select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #2c3e50;
+            border-radius: 4px;
+            background-color: #ecf0f1;
+            color: #34495e;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+        }
+        .form-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .form-container h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #1abc9c;
+            padding-bottom: 10px;
+        }
+        .output-container {
+            flex: 1;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .output-container h3 {
+            margin-top: 0;
+            color: #1abc9c;
+        }
+        .output-container pre {
+            background-color: #34495e;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.9em;
+            flex-grow: 1;
+            border: 1px solid #4a627a;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #34495e;
+        }
+        .form-group label .required {
+            color: #e74c3c;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="url"],
+        .form-group input[type="date"],
+        .form-group input[type="number"],
+        .form-group textarea {
+            width: calc(100% - 18px);
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-group .info {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            display: block;
+            margin-top: 3px;
+        }
+        .nested-group {
+            border: 1px solid #1abc9c;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            background-color: #fdfefe;
+        }
+        .nested-group h4 {
+            margin-top: 0;
+            color: #16a085;
+        }
+        button {
+            background-color: #1abc9c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 5px;
+        }
+        button:hover {
+            background-color: #16a085;
+        }
+        .action-buttons button {
+            margin-right: 10px;
+        }
+        .validation-links a {
+            display: inline-block;
+            margin: 10px 10px 0 0;
+            color: #1abc9c;
+            text-decoration: none;
+            background-color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        .validation-links a:hover {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+        }
+        .array-item {
+            border: 1px dashed #bdc3c7;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            position: relative;
+        }
+        .remove-item-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #e74c3c;
+            font-size: 0.8em;
+            padding: 3px 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2>Schema Architect Lite</h2>
+            <label for="schemaType">Select Schema Type:</label>
+            <select id="schemaType">
+                <option value="">-- Select Type --</option>
+                <option value="Article">Article</option>
+                <option value="Product">Product</option>
+                <option value="LocalBusiness">Local Business</option>
+                <option value="Event">Event</option>
+                <option value="FAQPage">FAQ Page</option>
+            </select>
+            <div class="validation-links">
+                <h3>Test Schema</h3>
+                <a href="https://search.google.com/test/rich-results" target="_blank">Google Rich Results Test</a>
+                <a href="https://validator.schema.org/" target="_blank">Schema.org Validator</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section class="form-container">
+                <h3 id="currentSchemaTitle">Select a schema type to begin</h3>
+                <form id="schemaForm">
+                    <div id="formFields">
+                        <!-- Dynamic fields will be injected here -->
+                    </div>
+                </form>
+            </section>
+
+            <section class="output-container">
+                <h3>Generated JSON-LD</h3>
+                <pre id="jsonOutput">{}</pre>
+                <div class="action-buttons">
+                    <button id="copyJsonButton">Copy JSON-LD</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const schemaDefinitions = {
+            "Article": {
+                displayName: "Article / Blog Post",
+                properties: [
+                    { name: "headline", label: "Headline", type: "text", required: true, info: "The headline of the article." },
+                    { name: "description", label: "Description", type: "textarea", required: true, info: "A short description of the article." },
+                    { name: "image", label: "Image URL", type: "url", info: "URL of an image representative of the article." },
+                    { name: "datePublished", label: "Date Published", type: "date", required: true, info: "Publication date (YYYY-MM-DD)." },
+                    { name: "dateModified", label: "Date Modified", type: "date", info: "Last modification date (YYYY-MM-DD)." },
+                    { name: "author", label: "Author", type: "nested", nestedSchema: "Person", info: "The author of the article." },
+                    { name: "publisher", label: "Publisher", type: "nested", nestedSchema: "Organization", info: "The publisher of the article." }
+                ]
+            },
+            "Product": {
+                displayName: "Product",
+                properties: [
+                    { name: "name", label: "Product Name", type: "text", required: true },
+                    { name: "description", label: "Description", type: "textarea", required: true },
+                    { name: "image", label: "Image URL", type: "url" },
+                    { name: "sku", label: "SKU", type: "text", info: "Stock Keeping Unit / Product ID." },
+                    { name: "brand", label: "Brand", type: "nested", nestedSchema: "Brand" },
+                    { name: "offers", label: "Offer", type: "nested", nestedSchema: "Offer", isArray: true, info: "An offer to sell the product." }
+                ]
+            },
+            "LocalBusiness": {
+                displayName: "Local Business",
+                properties: [
+                    { name: "name", label: "Business Name", type: "text", required: true },
+                    { name: "description", label: "Description", type: "textarea" },
+                    { name: "image", label: "Logo/Image URL", type: "url" },
+                    { name: "telephone", label: "Telephone", type: "text" },
+                    { name: "email", label: "Email", type: "text" },
+                    { name: "priceRange", label: "Price Range", type: "text", info: "e.g., $, $$, $$$ or $10-$20" },
+                    { name: "address", label: "Address", type: "nested", nestedSchema: "PostalAddress", required: true },
+                    { name: "openingHoursSpecification", label: "Opening Hours", type: "nested", nestedSchema: "OpeningHoursSpecification", isArray: true, info: "Add opening hours for different days."}
+                ]
+            },
+            "Event": {
+                displayName: "Event",
+                properties: [
+                    { name: "name", label: "Event Name", type: "text", required: true },
+                    { name: "description", label: "Description", type: "textarea", required: true },
+                    { name: "startDate", label: "Start Date & Time", type: "datetime-local", required: true },
+                    { name: "endDate", label: "End Date & Time", type: "datetime-local" },
+                    { name: "eventAttendanceMode", label: "Attendance Mode", type: "select", options: ["", "OfflineEventAttendanceMode", "OnlineEventAttendanceMode", "MixedEventAttendanceMode"], required: true, info: "How the event is attended."},
+                    { name: "eventStatus", label: "Event Status", type: "select", options: ["", "EventScheduled", "EventMovedOnline", "EventPostponed", "EventRescheduled", "EventCancelled"], info: "Current status of the event."},
+                    { name: "location", label: "Location", type: "nested", nestedSchema: "Place", info: "If offline or mixed." },
+                    { name: "organizer", label: "Organizer", type: "nested", nestedSchema: "PersonOrOrganization" },
+                    { name: "offers", label: "Ticket Offer", type: "nested", nestedSchema: "Offer", isArray: true, info: "Ticket information." }
+                ]
+            },
+            "FAQPage": {
+                displayName: "FAQ Page",
+                properties: [
+                    { name: "mainEntity", label: "Questions & Answers", type: "nested", nestedSchema: "Question", isArray: true, required: true }
+                ]
+            },
+            // --- Nested Schema Definitions ---
+            "Person": {
+                isNestedType: true, // Flag to identify it as primarily for nesting
+                properties: [
+                    { name: "name", label: "Name", type: "text", required: true },
+                    { name: "url", label: "URL (Profile/Website)", type: "url" }
+                ]
+            },
+            "Organization": {
+                isNestedType: true,
+                properties: [
+                    { name: "name", label: "Organization Name", type: "text", required: true },
+                    { name: "url", label: "Website URL", type: "url" },
+                    { name: "logo", label: "Logo URL", type: "url" }
+                ]
+            },
+            "PersonOrOrganization": { // A special type to allow choosing Person or Organization
+                isNestedType: true,
+                properties: [
+                    { name: "@type", label: "Type", type: "select", options: ["Person", "Organization"], required: true, isTypeSelector: true },
+                    // Dynamic fields based on @type selection will be handled by JS
+                ]
+            },
+            "Brand": {
+                isNestedType: true,
+                properties: [
+                    { name: "name", label: "Brand Name", type: "text", required: true }
+                ]
+            },
+            "Offer": {
+                isNestedType: true,
+                properties: [
+                    { name: "price", label: "Price", type: "number", required: true },
+                    { name: "priceCurrency", label: "Currency", type: "text", required: true, placeholder: "e.g., USD, EUR" },
+                    { name: "availability", label: "Availability", type: "select", options: ["", "InStock", "OutOfStock", "PreOrder", "OnlineOnly", "LimitedAvailability"], info: "e.g., InStock, OutOfStock" },
+                    { name: "url", label: "Offer URL", type: "url", info: "URL to the specific offer/product page." },
+                    { name: "validFrom", label: "Valid From (Date)", type: "date"},
+                ]
+            },
+            "PostalAddress": {
+                isNestedType: true,
+                properties: [
+                    { name: "streetAddress", label: "Street Address", type: "text", required: true },
+                    { name: "addressLocality", label: "City/Locality", type: "text", required: true },
+                    { name: "addressRegion", label: "State/Region", type: "text" },
+                    { name: "postalCode", label: "Postal Code", type: "text", required: true },
+                    { name: "addressCountry", label: "Country Code", type: "text", required: true, placeholder: "e.g., US, GB" }
+                ]
+            },
+            "OpeningHoursSpecification": {
+                isNestedType: true,
+                properties: [
+                    { name: "dayOfWeek", label: "Day of Week", type: "select", options: ["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], required: true },
+                    { name: "opens", label: "Opens (HH:MM)", type: "text", placeholder: "e.g., 09:00", required: true },
+                    { name: "closes", label: "Closes (HH:MM)", type: "text", placeholder: "e.g., 17:00", required: true }
+                ]
+            },
+            "Place": {
+                isNestedType: true,
+                properties: [
+                    { name: "name", label: "Venue Name", type: "text", required: true },
+                    { name: "address", label: "Address", type: "nested", nestedSchema: "PostalAddress", required: true }
+                ]
+            },
+            "Question": { // For FAQPage
+                isNestedType: true,
+                properties: [
+                    { name: "name", label: "Question", type: "textarea", required: true },
+                    { name: "acceptedAnswer", label: "Answer", type: "nested", nestedSchema: "Answer", required: true}
+                ]
+            },
+            "Answer": { // For Question in FAQPage
+                isNestedType: true,
+                properties: [
+                    { name: "text", label: "Answer Text", type: "textarea", required: true }
+                ]
+            }
+        };
+
+        const schemaTypeSelect = document.getElementById('schemaType');
+        const formFieldsContainer = document.getElementById('formFields');
+        const jsonOutputElement = document.getElementById('jsonOutput');
+        const currentSchemaTitleElement = document.getElementById('currentSchemaTitle');
+        const copyJsonButton = document.getElementById('copyJsonButton');
+        const schemaForm = document.getElementById('schemaForm');
+
+        let arrayItemCounters = {}; // To keep track of array item indices e.g. offers[0], offers[1]
+
+        function createFieldHtml(prop, parentPath = '', itemIndex = null) {
+            const fieldId = parentPath + (itemIndex !== null ? `[${itemIndex}].` : '') + prop.name;
+            let html = `<div class="form-group">
+                <label for="${fieldId}">${prop.label}${prop.required ? '<span class="required">*</span>' : ''}</label>`;
+
+            if (prop.type === 'textarea') {
+                html += `<textarea id="${fieldId}" name="${fieldId}" ${prop.required ? 'required' : ''} placeholder="${prop.placeholder || ''}"></textarea>`;
+            } else if (prop.type === 'select') {
+                html += `<select id="${fieldId}" name="${fieldId}" ${prop.required ? 'required' : ''}>`;
+                prop.options.forEach(opt => {
+                    html += `<option value="${opt.value !== undefined ? opt.value : opt}">${opt.label !== undefined ? opt.label : opt}</option>`;
+                });
+                html += `</select>`;
+                 if (prop.isTypeSelector) { // For PersonOrOrganization
+                    html += `<div id="${fieldId}-fields" class="nested-group" style="margin-top:10px;"></div>`; // Placeholder for dynamic fields
+                }
+            } else if (prop.type === 'nested') {
+                html += `<div class="nested-group" id="${fieldId}-group">`;
+                if (prop.isArray) {
+                    html += `<h4>${prop.label} Items</h4>`;
+                    html += `<div id="${fieldId}-items"></div>`; // Container for array items
+                    html += `<button type="button" class="add-array-item-btn" data-property-name="${prop.name}" data-parent-path="${parentPath}" data-nested-schema="${prop.nestedSchema}">Add ${prop.label}</button>`;
+                } else {
+                    html += `<h4>${prop.label}</h4>`;
+                    const nestedSchemaDef = schemaDefinitions[prop.nestedSchema];
+                    if (nestedSchemaDef && nestedSchemaDef.properties) {
+                        nestedSchemaDef.properties.forEach(nestedProp => {
+                            html += createFieldHtml(nestedProp, fieldId + '.');
+                        });
+                    } else {
+                        html += `<p>Nested schema ${prop.nestedSchema} not fully defined.</p>`;
+                    }
+                }
+                html += `</div>`;
+            } else { // text, url, date, number, datetime-local
+                html += `<input type="${prop.type}" id="${fieldId}" name="${fieldId}" ${prop.required ? 'required' : ''} placeholder="${prop.placeholder || ''}">`;
+            }
+
+            if (prop.info) {
+                html += `<span class="info">${prop.info}</span>`;
+            }
+            html += `</div>`;
+            return html;
+        }
+        
+        function addArrayItem(propertyName, parentPath, nestedSchemaName) {
+            const itemsContainerId = parentPath + propertyName + "-items";
+            const itemsContainer = document.getElementById(itemsContainerId);
+            if (!itemsContainer) return;
+
+            const counterId = parentPath + propertyName;
+            arrayItemCounters[counterId] = (arrayItemCounters[counterId] || 0);
+            const itemIndex = arrayItemCounters[counterId];
+            
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'array-item';
+            itemDiv.id = `${parentPath}${propertyName}[${itemIndex}]-item`;
+
+            let itemHtml = `<h5>${nestedSchemaName} #${itemIndex + 1}</h5>`;
+            const nestedSchemaDef = schemaDefinitions[nestedSchemaName];
+            if (nestedSchemaDef && nestedSchemaDef.properties) {
+                nestedSchemaDef.properties.forEach(nestedProp => {
+                    itemHtml += createFieldHtml(nestedProp, `${parentPath}${propertyName}[${itemIndex}].`);
+                });
+            }
+            
+            itemHtml += `<button type="button" class="remove-item-btn" data-item-id="${itemDiv.id}">Remove</button>`;
+            itemDiv.innerHTML = itemHtml;
+            itemsContainer.appendChild(itemDiv);
+
+            // Add event listener for the new remove button
+            itemDiv.querySelector('.remove-item-btn').addEventListener('click', function() {
+                document.getElementById(this.dataset.itemId).remove();
+                generateJson(); // Regenerate JSON after removal
+            });
+            
+            arrayItemCounters[counterId]++;
+            addInputListeners(itemDiv); // Add listeners to newly added fields
+            generateJson(); // Update JSON output
+        }
+
+
+        function renderForm(schemaTypeName) {
+            formFieldsContainer.innerHTML = '';
+            arrayItemCounters = {}; // Reset counters for array items
+            const schema = schemaDefinitions[schemaTypeName];
+            if (!schema) {
+                currentSchemaTitleElement.textContent = 'Select a schema type to begin';
+                return;
+            }
+            currentSchemaTitleElement.textContent = `Editing: ${schema.displayName || schemaTypeName}`;
+            schema.properties.forEach(prop => {
+                formFieldsContainer.innerHTML += createFieldHtml(prop);
+            });
+            addInputListeners(formFieldsContainer);
+            
+            // Add event listeners for "Add Array Item" buttons
+            document.querySelectorAll('.add-array-item-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    addArrayItem(this.dataset.propertyName, this.dataset.parentPath || '', this.dataset.nestedSchema);
+                });
+            });
+        }
+
+        function addInputListeners(container) {
+            container.querySelectorAll('input, textarea, select').forEach(input => {
+                input.addEventListener('input', () => {
+                    // Handle PersonOrOrganization type selection
+                    if (input.tagName === 'SELECT' && schemaDefinitions[input.value]?.isNestedType) {
+                        const parentPropDef = findPropertyDefinitionByInputName(input.name);
+                        if (parentPropDef && parentPropDef.isTypeSelector) {
+                            const dynamicFieldsContainerId = input.id + "-fields";
+                            const dynamicFieldsContainer = document.getElementById(dynamicFieldsContainerId);
+                            if(dynamicFieldsContainer) {
+                                dynamicFieldsContainer.innerHTML = ''; // Clear previous fields
+                                const selectedNestedSchema = schemaDefinitions[input.value];
+                                if (selectedNestedSchema && selectedNestedSchema.properties) {
+                                    selectedNestedSchema.properties.forEach(nestedProp => {
+                                        // Adjust parentPath for these dynamically added fields
+                                        // The parent path should refer to the container of PersonOrOrganization, not its @type field.
+                                        let basePath = input.name.substring(0, input.name.lastIndexOf('.@type'));
+                                        dynamicFieldsContainer.innerHTML += createFieldHtml(nestedProp, basePath + '.');
+                                    });
+                                    addInputListeners(dynamicFieldsContainer); // Add listeners to newly added fields
+                                }
+                            }
+                        }
+                    }
+                    generateJson();
+                });
+            });
+        }
+        
+        function findPropertyDefinitionByInputName(inputName) {
+            // Helper to find the original property definition from schemaDefinitions based on input name
+            // This is a simplified version and might need to be more robust for deeply nested structures
+            const parts = inputName.split('.');
+            let currentLevel = schemaDefinitions[schemaTypeSelect.value]; // Start with main schema
+            let propDef = null;
+            for (let i = 0; i < parts.length; i++) {
+                if (!currentLevel || !currentLevel.properties) break;
+                // Handle array indexing like offers[0]
+                const partName = parts[i].replace(/\[\d+\]$/, ''); // remove [0], [1] etc.
+                propDef = currentLevel.properties.find(p => p.name === partName);
+                if (!propDef) break;
+                if (propDef.nestedSchema && i < parts.length -1) { // if it's a nested schema and not the last part
+                     currentLevel = schemaDefinitions[propDef.nestedSchema];
+                } else if (propDef.isTypeSelector) { // if it's PersonOrOrganization's @type field
+                    return propDef; // return this propDef
+                }
+            }
+            return propDef;
+        }
+
+
+        function setNestedValue(obj, path, value) {
+            if (typeof path === "string") {
+                path = path.split('.');
+            }
+
+            let current = obj;
+            for (let i = 0; i < path.length - 1; i++) {
+                let key = path[i];
+                let nextKeyIsArray = /\[\d+\]$/.test(path[i+1]); // Check if next part is an array index
+                let arrayMatch = key.match(/^(.+)\[(\d+)\]$/); // e.g. offers[0]
+
+                if (arrayMatch) { // Handle array part: "key[index]"
+                    let arrayKey = arrayMatch[1];
+                    let index = parseInt(arrayMatch[2]);
+                    if (!current[arrayKey]) current[arrayKey] = [];
+                    if (!current[arrayKey][index]) current[arrayKey][index] = (nextKeyIsArray || /\[\d+\]$/.test(path[path.length-1])) ? [] : {};
+                    current = current[arrayKey][index];
+                } else { // Handle object part
+                    if (!current[key]) current[key] = (nextKeyIsArray) ? [] : {};
+                    current = current[key];
+                }
+            }
+            
+            let lastKey = path[path.length - 1];
+            let lastKeyArrayMatch = lastKey.match(/^(.+)\[(\d+)\]$/);
+            if (lastKeyArrayMatch) {
+                 let arrayKey = lastKeyArrayMatch[1];
+                 let index = parseInt(lastKeyArrayMatch[2]);
+                 if (!current[arrayKey]) current[arrayKey] = [];
+                 current[arrayKey][index] = value;
+            } else {
+                current[lastKey] = value;
+            }
+        }
+
+        function generateJson() {
+            const selectedSchemaType = schemaTypeSelect.value;
+            if (!selectedSchemaType) {
+                jsonOutputElement.textContent = '{}';
+                return;
+            }
+
+            const schemaData = {
+                "@context": "https://schema.org",
+                "@type": selectedSchemaType
+            };
+
+            const formData = new FormData(schemaForm);
+            const rawData = {};
+
+            for (let [name, value] of formData.entries()) {
+                if (value.trim() !== "") { // Only include non-empty fields
+                    // If it's a date, ensure ISO 8601 format if time is also included.
+                    // For 'date' type, it's fine. For 'datetime-local', browsers usually give ISO-like string.
+                    if (value.includes('T')) { // Likely datetime-local
+                        // Ensure it has seconds if missing for full ISO 8601, though often optional
+                        // For now, we'll assume browser format is mostly okay or user enters correctly.
+                    }
+                     // Check if this field is part of a PersonOrOrganization selection
+                    const propDef = findPropertyDefinitionByInputName(name);
+                    if (propDef && propDef.isTypeSelector && name.endsWith(".@type")) {
+                        // This is the @type field for PersonOrOrganization
+                        // We need to set the @type for its parent object
+                        let basePath = name.substring(0, name.lastIndexOf('.@type'));
+                        setNestedValue(rawData, basePath + ".@type", value);
+                    } else {
+                        setNestedValue(rawData, name, value);
+                    }
+                }
+            }
+            
+            // Function to clean up objects by removing undefined properties and converting to arrays where needed
+            function finalizeObject(obj, schemaDef) {
+                if (typeof obj !== 'object' || obj === null) return obj;
+
+                const finalObj = {};
+                for (const key in obj) {
+                    let propDefinition;
+                    if (schemaDef && schemaDef.properties) {
+                        propDefinition = schemaDef.properties.find(p => p.name === key);
+                    }
+
+                    if (obj[key] !== undefined && obj[key] !== null && (typeof obj[key] !== 'string' || obj[key].trim() !== '')) {
+                        if (Array.isArray(obj[key])) {
+                             const nestedSchemaName = propDefinition ? propDefinition.nestedSchema : null;
+                             const nestedItemsDef = nestedSchemaName ? schemaDefinitions[nestedSchemaName] : null;
+                             finalObj[key] = obj[key].map(item => finalizeObject(item, nestedItemsDef)).filter(item => Object.keys(item).length > 0);
+                             if(finalObj[key].length === 0) delete finalObj[key]; // remove empty arrays
+                        } else if (typeof obj[key] === 'object') {
+                            const nestedSchemaName = propDefinition ? propDefinition.nestedSchema : null;
+                            const nestedItemsDef = nestedSchemaName ? schemaDefinitions[nestedSchemaName] : null;
+                            const nestedFinal = finalizeObject(obj[key], nestedItemsDef);
+                            if (Object.keys(nestedFinal).length > 0) {
+                                if (propDefinition && propDefinition.nestedSchema && !nestedFinal["@type"]) { // Add @type to nested objects if not PersonOrOrganization
+                                    if (schemaDefinitions[propDefinition.nestedSchema] && !schemaDefinitions[propDefinition.nestedSchema].isTypeSelector) { //don't add for PersonOrOrg itself
+                                      nestedFinal["@type"] = propDefinition.nestedSchema;
+                                    }
+                                }
+                                finalObj[key] = nestedFinal;
+                            }
+                        } else {
+                            finalObj[key] = obj[key];
+                        }
+                    }
+                }
+                return finalObj;
+            }
+            
+            const finalSchemaData = { ...schemaData, ...finalizeObject(rawData, schemaDefinitions[selectedSchemaType]) };
+
+            // Remove any top-level properties that are empty objects after finalization
+            for (const key in finalSchemaData) {
+                if (typeof finalSchemaData[key] === 'object' && finalSchemaData[key] !== null && !Array.isArray(finalSchemaData[key]) && Object.keys(finalSchemaData[key]).length === 0 && key !== "@context" && key !== "@type") {
+                    delete finalSchemaData[key];
+                }
+            }
+
+            jsonOutputElement.textContent = JSON.stringify(finalSchemaData, null, 2);
+        }
+
+        schemaTypeSelect.addEventListener('change', (event) => {
+            renderForm(event.target.value);
+            generateJson();
+        });
+
+        copyJsonButton.addEventListener('click', () => {
+            navigator.clipboard.writeText(jsonOutputElement.textContent)
+                .then(() => alert('JSON-LD copied to clipboard!'))
+                .catch(err => console.error('Failed to copy: ', err));
+        });
+        
+        // Initial call to set up if a type is pre-selected (none in this case)
+        renderForm(schemaTypeSelect.value);
+        generateJson();
+
+    </script>
+</body>
+</html>
